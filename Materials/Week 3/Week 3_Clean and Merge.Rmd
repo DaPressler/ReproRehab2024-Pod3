@@ -34,7 +34,7 @@ library(ggplot2)
 
 #I previously saved the parent data set as a .csv
 #Reading it in here
-data.all=read.csv("raw.data.all.csv")
+data.all=read.csv("raw.data.all.csv") #making sure we have separate scripts for different things. Import script. Cleaning and Merging Script. Data Processing script?
 
 #Visualize again, across the time series by subject
 ggplot(data.all,aes(x=t,y=VO2,color=trial))+
@@ -50,14 +50,14 @@ ggplot(data.all,aes(x=t,y=VO2,color=trial))+
 class(data.all$Sub)
 
 #But I can convert it to a factor and then set the levels of the factor into
-#the order I want them to be.
+#the order I want them to be. - define what the levels should be - we are just putting in the order that we want them to be in.
 data.all$Sub=factor(data.all$Sub,levels = c("Sub1","Sub2","Sub3","Sub4",
                                             "Sub5", "Sub6","Sub7","Sub8",
                                             "Sub9","Sub10","Sub11","Sub12",
                                             "Sub13"))
 #This is more desireable anyway because any variable of class character is
 #implicitly converted to a factor when run through an lm or lme anyway.
-class(data.all$Sub)
+class(data.all$Sub) #checking class and converting to a factor - 
 
 #Fixed
 ggplot(data.all,aes(x=t,y=VO2,color=trial))+
@@ -76,13 +76,13 @@ ggplot(data.all,aes(x=t,y=VO2,color=trial))+
 #the dataset aggregated. Here I just want the max time for trial 5 across all
 #subjects. To reduce the output I just index the data.all to only include trial 5.
 #Looks like Sub 2 did 873 seconds, and everyone else did ~440
-aggregate(t~Sub,data.all[data.all$trial=="trial 5",],max)
+aggregate(t~Sub,data.all[data.all$trial=="trial 5",],max) #aggregate --> going to look at the maximum amount of time (t~Sub)for all of our t data, give me the max for every subject - for every trial that equals trial 5. So when we run that, we get the output for all of our subjects and we get the maximal time (t) for all of our subjects for trial 5.
 
 #I am going to remove all t for Sub 2 greater than 440
 #I am going to use a method called negation !()
 #Here I put in a bunch of boolean arguments into () and then preceed it with a !
 #This removes all the rows in my dataset that match these conditions.
-data.all2=data.all[!(data.all$trial=="trial 5" & data.all$Sub=="Sub2" & data.all$t>440),]
+data.all2=data.all[!(data.all$trial=="trial 5" & data.all$Sub=="Sub2" & data.all$t>440),] #--> data in rows that equal trial 5 and data for subj 2, then and any time data more than 440sec --> put in () and do ! which removes it 
 
 #If I removed the !() it would only return the trial 5, for Sub2 with t > 440
 
@@ -99,21 +99,22 @@ ggplot(data.all2,aes(x=t,y=VO2,color=trial))+
 ## 1.2 Long to wide
 
 Now I am going to convert the data from long to wide format. This can be useful if I want to look at correlations between my behavioral variables.
+#long format is what all the visualizations and statistical analyses take --> this is "tidy data format" - each row is an independent observation and each column is a different variable - In these data case we have VO2 and VE as variables - each row may be a trial for the participant and these are the values. 
 
 ```{r long to wide}
 
 library(tidyr)
 
 #first I am going to create an aggregate of the data
-data.agg=aggregate(cbind(VO2,Rf,VE,VT)~Sub+trial,data.all2,mean)
+data.agg=aggregate(cbind(VO2,Rf,VE,VT)~Sub+trial,data.all2,mean) #we're binding the variables indicated and then were aggregating all the variables - taking time series data and getting the average down for each trial.
 
 #This created a summarized data set across our 4 outcome variables average across all time for each subject for each trial
 
 #I am going to use the tidyr library to "pivot" my data frame along the trial variable.
 
 #Now I am going to use the pivot_wider function from tidyr to create a new variable for each trial 
-data.agg.w=pivot_wider(data.agg,names_from = trial,
-                       values_from = VO2:VT,id_cols = Sub)
+data.agg.w=pivot_wider(data.agg,names_from = trial, #I'm taking names from trial and 
+                       values_from = VO2:VT,id_cols = Sub) # the correlation function is the only one that will do some kind of analysis in wide format. all others will be more in long format.
 
 #create a correlation matrix with only comlete observations,
 #Can only include numeric variables.
@@ -128,7 +129,7 @@ corrplot(cmat)
 #Now let's convert our wide dataset back to long, just for fun.
 data.agg.l <- pivot_longer(data.agg.w,
                            cols = VO2_rest:`VT_trial 6`, 
-                           names_to = c(".value", "trial"), 
+                           names_to = c(".value", "trial"), #need to give an understanding to what these characters are - the pivot wider has each column as a value for the different variables and the trial number but are separated by the _
                            names_sep = "_")
 
 ```
@@ -144,7 +145,7 @@ demo=read_excel("SubjectInfo.xlsx")
 
 #merging the demo data to the aggregate data in the long format
 #If the names of the merge variable are different then we have to call that explicitly
-demo.data=merge(data.agg,demo,by.x="Sub",by.y = "Subject No")
+demo.data=merge(data.agg,demo,by.x="Sub",by.y = "Subject No") #combining sub with subject No for the two columns
 
 #Have to order the levels of the trial
 demo.data$trial=factor(demo.data$trial,levels = c("rest","trial 1","trial 2",
@@ -158,10 +159,14 @@ ggplot(demo.data,aes(x=trial,VO2,color=Gender))+
 demo.data.var.long=pivot_longer(demo.data,
                                cols = VO2:VT,
                                names_to = "Variable",
-                               values_to = "Value")
+                               values_to = "Value") #need to pivot longer even more to have each variable listed in order to view and see the trend of gender across trial for all the outcomes. 
 
 ggplot(demo.data.var.long,aes(x=trial,Value,color=Gender))+
   geom_boxplot()+
   facet_wrap(~Variable,scales = "free")
 
+#not the best practice to pivot longer by variable - but you can to do a quick check - not so much to do for actual data showing since the Y axis is listed as "value"
+
+ggplot(demo.data,aes(x=trial,VO2,color=Sub, group = Sub,size=Age))+
+  geom_line()
 ```

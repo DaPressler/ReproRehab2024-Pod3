@@ -1,5 +1,7 @@
 rm(list=ls())
 
+pacman::p_load(tidyverse, nlme, emmeans, patchwork, lubridate, tidyr, ggplot2, here, purrr, readxl, chron, Hmisc, ggthemes, dplyr)
+
 ReqdLibs = c("here","purrr","readxl","Hmisc","chron","ggplot2","ggthemes","dplyr")
 invisible(lapply(ReqdLibs, library, character.only = TRUE))
 
