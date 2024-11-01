@@ -165,8 +165,16 @@ ggplot(demo.data.var.long,aes(x=trial,Value,color=Gender))+
   geom_boxplot()+
   facet_wrap(~Variable,scales = "free")
 
+<<<<<<< HEAD
 #not the best practice to pivot longer by variable - but you can to do a quick check - not so much to do for actual data showing since the Y axis is listed as "value"
 
 ggplot(demo.data,aes(x=trial,VO2,color=Sub, group = Sub,size=Age))+
   geom_line()
+=======
+
+# RV's changes--
+ggplot(demo.data, aes(x = trial, y = VE, col = RF) + 
+geom_pointrange()
+
+>>>>>>> ea153dab137c252b9bfae7afa9de8d57e23a4c94
 ```

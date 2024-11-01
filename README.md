@@ -12,9 +12,9 @@ Each week, we will share with you a **"codebook"** that contains the code and de
 
 To follow along in each class, go to this [folder](https://github.com/rinivarg/ReproRehab2024-Pod3/tree/main/Git%20and%20GitHub) and learn how you can integrate this repository with R.
 
+# Curriculum
 Below is the curriculum which shows the week-wise breakdown of the topics we will cover. Everything on here is subject to change as the needs of the pod evolve. Looking forward to 8 weeks of learning and teamwork!
 
-# Curriculum
 <details>
   <summary>Click to expand</summary>
   
@@ -40,8 +40,8 @@ You now have the makings of a working analytical pipeline that fits your data an
 ## [Week 7 & 8](https://github.com/rinivarg/ReproRehab2024-Pod3/tree/main/Materials/Week%207%20%26%208): Personalized Lessons!!
 We have now covered the basics on all things R that are necessary for reproducible research in rehabilitation science. Now it is your turn to tell us what you would like to learn next! Don’t be afraid to think big or aim for a deep dive into one specific area! Even if it is something that we are unfamiliar with, will make sure to connect you with someone in the ReproRehab cohort that can help!
 
-## [Bonus Content](https://github.com/rinivarg/ReproRehab2024-Pod3/tree/main/Materials/Bonus): Intro to Git & GitHub
-You've probably heard by now about GitHub for sharing your code and data, but it's much more than that! In fact, Git (the software that the GitHub platform uses) is first and foremost a version-control tool. Through that very function, it allows you to travel in time on some version of your own code *and* collaborate with others on the same code without needing to have a million versions (e.g., code_FINAL_RV, code_FINAL_RV_AH, code_FINALFINAL_AH_RV_RV2024... lol, you get the gist). <br> To learn more, visit the [content folder](https://github.com/rinivarg/ReproRehab2024-Pod3/tree/main/Materials/Bonus).
+## [Bonus Content](https://github.com/rinivarg/ReproRehab2024-Pod3/tree/main/Git%20and%20GitHub): Intro to Git & GitHub
+You've probably heard by now about GitHub for sharing your code and data, but it's much more than that! In fact, Git (the software that the GitHub platform uses) is first and foremost a version-control tool. Through that very function, it allows you to travel in time on some version of your own code *and* collaborate with others on the same code without needing to have a million versions (e.g., code_FINAL_RV, code_FINAL_RV_AH, code_FINALFINAL_AH_RV_RV2024... lol, you get the gist). <br> To learn more, visit the [content folder](https://github.com/rinivarg/ReproRehab2024-Pod3/tree/main/Git%20and%20GitHub).
 
 ****
 </details> 
