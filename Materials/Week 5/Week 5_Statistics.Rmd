@@ -21,6 +21,7 @@ library(huxtable)
 library(officer)
 library(dplyr)
 
+
 demo=read_excel("SubjectInfo.xlsx")
 
 str(demo)
@@ -49,7 +50,7 @@ tb.group=tbl_summary(demo.clean,
                digits = all_continuous() ~ 2, #I want two points of precision (two decimal points) for continuous
                missing = "ifany") %>%
   add_p(
-    #test = list("Age" = "t.test")
+    #test = list("Age" = "t.test") #Test for variable, have that be loaded as a t.test
     ) %>%
   bold_labels() 
 
@@ -57,7 +58,7 @@ tb.group
 
 table1=as_hux_table(tb.group)
 #Convert to word doc which will be saved in your current path
-quick_docx(table1,file="Gender Demo table.docx")
+quick_docx(table1,file="Gender Demo table.docx") #quick_docx takes a huxtable and converts it to a word doc
 
 ```
 
@@ -65,8 +66,8 @@ quick_docx(table1,file="Gender Demo table.docx")
 
 ```{r stats.one}
 
-data.task=read.csv("raw.data.all.csv")
-data.all=merge(data.task,demo,by.x = "Sub",by.y = "Subject No")
+data.task=read.csv("raw.data.all.csv") #merging in raw data and putting it with my demo data
+data.all=merge(data.task,demo,by.x = "Sub",by.y = "Subject No") #in data.task data is "Sub" and demo it is labeled "Subject No"
 
 #Aggregate all data by subject age and gender
 data.agg=aggregate(VO2~Age+Gender+Sub,data.all,mean)
@@ -78,29 +79,32 @@ ggplot(data.agg,aes(x=Gender,y=VO2))+
   geom_jitter()
 
 library(car)
-data.agg$Gender=factor(data.agg$Gender,levels = c("F","M"))
+data.agg$Gender=factor(data.agg$Gender,levels = c("F","M")) #can do "M", "F" and will get difference reference levels
 #Run first linear model with lm()
 fit=lm(VO2~Age+Gender,data.agg)
 #check assumptions
-plot(fit)
-vif(fit) #Check for collinearity
-cooks.distance(fit) #Check for outliers
-summary(fit)
-confint(fit)
+plot(fit) #visually check residuals vs fitted values, want residuals and fit close to each other, Leverage --> looks at outliers, calulates the cook's distance for each datapoint --> how much leverage is this datapoint actually applying to the model to see if removing it will change anything or not. Don't want a cook's distance more than 0.5, especially not more than 1.0 -- we don't see anything that needs to change significantly at this point.
+vif(fit) #Check for collinearity --> calculate the colinearity among all my indep variables within my linear model, returns the variance inflation factor for both age and gender. If they are very correlated with one another then these 2 numbers go up -- If you have a value above 5 then we would be really distressed about it. Standard error produces the T-value test stat --> larger error, We don't want vif beyond between 1-2 and don't want a cooks distance above 5.
+cooks.distance(fit) #Check for outliers - don't want cooks distance more than 5
+summary(fit) 
+confint(fit) #confint --> report each of these things in my manuscript: getting confidence intervals - instead go back to gtsummary to get the stuff.
 
 tbl_regression(fit,
                show_single_row = "Gender",
                label = list(Gender = "Gender(Male)"),
-               intercept = T)
+               intercept = T) #this is using gtsummary which will have my variable, data coeff, 95% CI, and p-value
 
+#whatever comes first in the levels will be the reference level and then the estimate is the other
+
+#Estimate - getting intercept for females, then getting estimate for difference with ages, then getting estimate for difference between M and F --> 126.91 --> getting males 126.91 higher than F so to get estimated value for males then you get 657.13 + 126.91
 ```
 ## 1.3 Mixed Models
 
 ```{r mixed models}
 
-data.all=data.all[data.all$t<440,]
+data.all=data.all[data.all$t<440,] #got rid of person that had extra minutes of walking during that 1 trial
 
-ggplot(data.all,aes(x=t,y=VO2,color=trial,group=trial))+
+ggplot(data.all,aes(x=t,y=VO2,color=trial,group=trial))+ #visual checks for sanity checks
   geom_line(alpha=.5)+
   geom_smooth(method = 'lm',color="black",se=F,size=2.5)+
   geom_smooth(method = 'lm')
@@ -112,31 +116,32 @@ data.all$Level[data.all$trial=="trial 5" | data.all$trial=="trial 6"]="Downhill"
 data.all$Speed="Fast"
 data.all$Speed[data.all$trial=="trial 2" | data.all$trial=="trial 4" | data.all$trial=="trial 6"]="Slow"
 
-ggplot(data.all,aes(x=t,y=VO2))+
+ggplot(data.all,aes(x=t,y=VO2))+ #looking at downhill slow, downhill fast, then looking at some areas where there is some bias - uphill fast there is a kind of slope which is something we are interested in. If we consider speed and level of treadmill, what combination of things may cause some differences 
   geom_line(alpha=.5)+
   geom_smooth(method = 'lm',color="black",se=F,size=2.5)+
   geom_smooth(method = 'lm')+
   facet_grid(Level~Speed)
 
-ggplot(data.all,aes(x=t,y=VO2,color=Speed))+
+ggplot(data.all,aes(x=t,y=VO2,color=Speed))+ #looking based on color instead - can see how much the slopes may vary depending on downhill level and uphill
   geom_line(alpha=.5)+
   geom_smooth(method = 'lm')+
   facet_wrap(~Level)
 
 
-
-fit.lme=lme(VO2~t*Speed+t*Level+Age+Gender,
-            random = ~1|Sub,
-            method = "ML",
+library(nlme)
+fit.lme=lme(VO2~t*Speed+t*Level+Age+Gender, #two interactions (time*speed) and (time*level) + two covariates - age and gender, all of this row is fixed effects and next row is random effects 
+            random = ~1|Sub, #random intercepts on subject
+            method = "ML", #ML is maximum likelihood
             data.all)
 
 Anova(fit.lme)
-vif(fit.lme)
-summary(fit.lme)
+vif(fit.lme) #variance inflation on fit.lme - some things are pretty high but doesn't seem to be changing my significance things
+summary(fit.lme) #have fixed effects then looking at random effects below --> if looking at random effects, usually trying to draw things back to a population - not doing that here --> just looking at fixed effects
+#if want to look at level vs uphill -- need to get into a posthoc and using package emmeans to get the marginal (adjusted) means for the level and speed
 library(emmeans)
 
 #Calculate marginal (adjusted) means for level and speed
-#This gives us the average adjusted VO2 by speed and level
+#This gives us the average adjusted VO2 by speed and level - already did a multiple comparison adjustment for you which is the tukey
 emmeans(fit.lme,pairwise ~ Speed)
 ggplot(data.all,aes(x=Speed,y=VO2))+
   geom_boxplot()
@@ -144,9 +149,9 @@ emmeans(fit.lme,pairwise ~ Level)
 ggplot(data.all,aes(x=Level,y=VO2))+
   geom_boxplot()
 
-#emtrends will return the pairwise comparisons between the slopes of each 
+#emtrends will return the pairwise comparisons between the slopes of each  -- looking at differences in trends
 #condition across time (t)
-emtrends(fit.lme,pairwise ~ Level,var = "t")
+emtrends(fit.lme,pairwise ~ Level,var = "t") #adding in variable = t, with t as the time variable and can look at variations in slope
 ggplot(data.all,aes(x=t,y=VO2,color=Level))+
   geom_line(alpha=.5)+
   geom_smooth(method = 'lm')
@@ -179,7 +184,7 @@ vif(fit.lme.log)
 summary(fit.lme.log)
 AIC(fit.lme.log)
 
-anova(fit.lme,fit.lme.log)
+anova(fit.lme,fit.lme.log) #looking at if the fit.lme.log fits the data statistically better than the fit.lme model
 
 ggplot(data.all,aes(x=t,y=VO2))+
   geom_line(alpha=.5)+

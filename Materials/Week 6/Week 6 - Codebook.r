@@ -41,7 +41,6 @@ ggplot(diamonds.ideal, mapping = aes(x = depth, y = after_stat(density),
   coord_cartesian(xlim = c(40,80), ylim = c(0, 1.3)) +
     theme_minimal() + thm
 
-
 dat.calc2 = read.csv("calcData.csv", header = TRUE)
 head(dat.calc2)
 
@@ -75,4 +74,7 @@ summary(mod.inter)
 emm_inter = emmeans(mod.inter, ~incline|speed)
 pairs(emm_inter, by = "incline")
 
-
+#Can copy URL
+#x=getURL(#copy the URL into here)
+#raw.github.usercontent.com(#copy the URL to this area)?
+#dat.calc2=read.csv(text=x, header = TRUE)
